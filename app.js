@@ -1,20 +1,34 @@
-const { createClient } = window.supabase;
-const supabase = createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
 const app = document.getElementById('app');
+let supabase = null;
 let session = null;
 let current = {};
 const steps = ['Customer','Loan Request','Business & Sales','Financials','Products','Balance Sheet','Collateral','Review'];
 
+function bootError(message) {
+  app.innerHTML = `<main class="auth"><section class="card"><h1>Loan Appraise V3</h1><p>Application could not start.</p><p class="error">${esc(message)}</p><button class="primary" onclick="location.reload()">Retry</button></section></main>`;
+}
+
 async function init() {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) return login(error.message);
-  session = data.session;
-  if (!session) return login();
-  await dashboard();
+  try {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      return bootError('Secure database library did not load. Please refresh in a moment.');
+    }
+    if (!window.SUPABASE_URL || !window.SUPABASE_PUBLISHABLE_KEY) {
+      return bootError('Supabase configuration is missing.');
+    }
+    supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_PUBLISHABLE_KEY);
+    const { data, error } = await supabase.auth.getSession();
+    if (error) return login(error.message);
+    session = data.session;
+    if (!session) return login();
+    await dashboard();
+  } catch (e) {
+    bootError(e?.message || String(e));
+  }
 }
 
 function login(errorMessage = '') {
-  app.innerHTML = `<main class="auth"><section class="card"><h1>Loan Appraise V3</h1><p>Secure loan appraisal and approval.</p><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button class="primary" id="signin">Sign In</button><p id="msg">${esc(errorMessage)}</p></section></main>`;
+  app.innerHTML = `<main class="auth"><section class="card"><h1>Loan Appraise V3</h1><p>Secure loan appraisal and approval.</p><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password"><button class="primary" id="signin">Sign In</button><p id="msg" class="error">${esc(errorMessage)}</p></section></main>`;
   document.getElementById('signin').onclick = async () => {
     const msg = document.getElementById('msg');
     const emailValue = document.getElementById('email').value.trim();
@@ -58,7 +72,7 @@ function application(existing = {}) {
   render();
 }
 
-function esc(v) { return String(v || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function esc(v) { return String(v || '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])); }
 function capture() {
   if (i0Invalid()) return false;
   ['full_name','phone','nin','bvn','residential_address'].forEach(k => { const e=document.getElementById(k); if(e) current[k]=e.value.trim(); });
