@@ -1,1 +1,1 @@
-window.SUPABASE_URL='https://ptjsgpwjmmdxahaikldq.supabase.co';window.SUPABASE_PUBLISHABLE_KEY='sb_publishable_m9eHogbtDsxouaILqvfVOQ_XoL9Vlz';
+window.SUPABASE_URL='https://ptjsgpwjmmdxahaikldq.supabase.co';window.SUPABASE_PUBLISHABLE_KEY='sb_publishable_m9eHogbtDsxouaILqvfVOQ_XoL9Vlz7';
